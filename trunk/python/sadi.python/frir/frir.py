@@ -89,9 +89,11 @@ def hash_tuple(t):
         else: return str(x)
     def hfn(s):
         m = hashlib.sha256()
-        m.update(s.encode('utf-8'))
+        m.update(' '.join([stringify(x) for x in t]).encode('utf-8'))
         return int(m.hexdigest(),16)
-    return sum([hfn(' '.join([stringify(x) for x in triple])) for triple in t])
+    print t
+    return sum(map(hfn, t))
+    #return sum([hfn(' '.join([stringify(x) for x in triple])) for triple in t])
 
 def hash_triple(t):
     s = ' '.join([x.n3() for x in t])
@@ -262,6 +264,7 @@ class RDFGraphDigest:
                 else: bnid = bnodeid
                 self.bnodes[bnodeid].append(term)
                 new_term = BNode(value="cb%s" % bnid)
+                print "cb%s" % bnid
                 self.new_bnodes[term] = new_term
                 return new_term
             else:
