@@ -4,10 +4,10 @@ use_setuptools()
 from setuptools import setup, find_packages
 setup(
     name = "sadi",
-    version = "0.5.1",
+    version = "0.5.2",
     packages = find_packages(exclude=['test.py',"example.py"]),
 
-    install_requires = ['rdflib>=4.0', 'rdfextras', 'webob', 'python-dateutil','pytidylib'],
+    install_requires = ['rdflib>=4.0', "Werkzeug", 'webob', 'python-dateutil','pytidylib'],
     setup_requires=['nose>=1.0', 'nose-cov>=1.6','werkzeug'],
     # metadata for upload to PyPI
     author = "James McCusker",

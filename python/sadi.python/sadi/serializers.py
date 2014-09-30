@@ -6,7 +6,6 @@ import collections
 import email
 from io import StringIO, BytesIO
 from xml.sax.xmlreader import InputSource
-from tidylib import tidy_document
 
 import sys
 
@@ -77,11 +76,19 @@ class RDFaSerializer(DefaultSerializer):
     def __init__(self):
         DefaultSerializer.__init__(self,'rdfa','xml')
     def deserialize(self,graph,content,mimetype):
-        print "Time to Tidy RDFa!!!"
-        document, errors = tidy_document(unicode(content),options={"numeric-entities":1})
-        if len(errors) > 0:
-            print errors
-        DefaultSerializer.deserialize(self,graph,document,mimetype)
+        content = unicode(content)
+        try:
+            #print "Time to Tidy RDFa!!!"
+            from tidylib import tidy_document
+
+            document, errors = tidy_document(content,options={"numeric-entities":1})
+            content = document
+            if len(errors) > 0:
+                #print errors
+        except:
+            pass
+            #print "failure using tidy. The RDFa document may not parse successfully."
+        DefaultSerializer.deserialize(self,graph,content,mimetype)
 
 class MultipartSerializer:
     def __init__(self,serializers):
@@ -104,11 +111,11 @@ class MultipartSerializer:
         rdf = [part for part in unnamed_parts if part.get_content_type() in self.serializers]
         if len(rdf) == 0:
             raise Exception("SADI With Attachments requires one unnamed RDF part.")
-        print '\n'.join([str(x) for x in rdf])
-        print '\n'.join([str(x) for x in named_parts.values()])
+        #print '\n'.join([str(x) for x in rdf])
+        #print '\n'.join([str(x) for x in named_parts.values()])
         rdf_content = rdf[0].get_payload()
-        print "using this RDF content:"
-        print rdf_content
+        #print "using this RDF content:"
+        #print rdf_content
         ser = self.serializers[rdf[0].get_content_type()]
         ser.deserialize(graph, unicode(rdf_content), rdf[0].get_content_type())
         graph.attachments.update(named_parts)
@@ -169,7 +176,7 @@ class JSONSerializer:
             data = json.loads(content)
         else:
             data = json.load(content)
-        print data
+        #print data
         bnodes = {}
         for s in data.keys():
             subject = self.getResource(s, bnodes)

@@ -87,14 +87,20 @@ class IncompleteError(Exception):
 class SADIGraph(Graph):
     attachments = {}
 
-    def get(self, uri):
+    def get(self, uri, accept=None):
         try:
+            if accept != None:
+                raise Exception()
             message = self.attachments[str(uri)]
             data = message.get_payload(decode=True)
             mimetype = message.get_content_type()
             return Response(data,mimetype=mimetype)
         except:
-            response = urllib2.urlopen(str(uri))
+            headers = {}
+            if accept != None:
+                headers['Accept'] = accept
+            request = urllib2.Request(str(uri),headers=headers)
+            response = urllib2.urlopen(request)
             info = response.info()
             data = response.read()
             mimetype = info.getheader("Content-Type")
@@ -162,8 +168,8 @@ class Service:
     def serialize(self, graph, accept):
         return serialize(graph, accept)
 
-    def get(self, uri, i):
-        return i.graph.get(uri)
+    def get(self, uri, i, accept=None):
+        return i.graph.get(uri, accept)
 
     def annotateServiceDescription(self, desc):
         pass

@@ -430,6 +430,14 @@ def negative_graph_match_test():
     True
     ],
     [ unicode('''@prefix : <http://example.org/ns#> .
+     :linear_two_step_symmetry_start :related [ :related [ :related :linear_two_step_symmatry_end]], 
+                                              [ :related [ :related :linear_two_step_symmatry_end]].'''),
+    unicode('''@prefix : <http://example.org/ns#> .
+     :linear_two_step_symmetry_start :related [ :related [ :related :linear_two_step_symmatry_end]], 
+                                              [ :related [ :related :linear_two_step_symmatry_end]].'''),
+    True
+    ],
+    [ unicode('''@prefix : <http://example.org/ns#> .
      _:a :rel [
          :rel [
          :rel [
