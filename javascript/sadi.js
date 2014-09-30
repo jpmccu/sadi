@@ -53,6 +53,7 @@
     };
     $.Graph.prototype.getResource = function(uri, type) {
         //console.log(uri, type);
+        var graph = this;
         if (!uri) {
             type = "bnode";
             uri = "_:node"+graph.length;
