@@ -1,0 +1,40 @@
+# Introduction #
+
+  1. commit the SNAPSHOT that you want to deploy as a release
+  1. `mvn deploy`
+> > Deploy the snapshot to the Sonatype snapshot repository.
+  1. test the deployed SNAPSHOT artifact
+> > Try to build other code using the deployed artifact. I recommend you add the Sonatype snapshot repository to your settings.xml in a profile and build using this profile after temporarily moving your local repository to a different location. This will best simulate external users building against the artifact you are deploying. For example:
+```
+    <profile>
+      <id>sonatype-snapshots</id>
+      <repositories>
+        <repository>
+          <id>sonatype-nexus-snapshots</id>
+          <name>Sonatype Nexus Snapshots</name>
+          <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>sonatype-nexus-snapshots</id>
+          <name>Sonatype Nexus Snapshots</name>
+          <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+```
+> > This block will make the Sonatype snapshot repository available when you use `mvn -Psonatype-snapshots`.
+  1. `mvn release:clean`
+  1. `mvn release:prepare`
+> > This will make changes to `pom.xml` and create an appropriate release tag in source control. **IMPORTANT**: when prompted for the name of the release tag, use `${project.version}/${sadi.svnName}` instead of the default `${project.artifactId}-${project.version}`. For example, use `0.3.1/sadi.parent` instead of `sadi-parent-0.3.1`. This will maximize compatibility with the Eclipse SVN plugin.
+  1. `mvn release:perform`
+> > This will push the release to the Sonatype staging repository. If you get HTTP 401 errors here, you're on your own. Mine just went away after a few weeks.
+  1. Visit https://oss.sonatype.org/index.html and close the staged repository
+> > More detailed instructions for this step are in section 8a of the [Sonatype Repository Usage Guide](https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide). Pay attention to the part of the guide that encourages you to test the release artifact before you release the closed repository.

@@ -1,0 +1,36 @@
+# Relationship to Other Web Service Standards #
+
+## Web Services Description Language (WSDL) ##
+
+WSDL `[`[WSDL](NormativeReferences#WSDL.md)`]` is an XML schema that is the current de facto standard for machine-readable description of web service interfaces. At the time of writing this document, the most recent version of WSDL is WSDL 2.0.
+
+The most important difference between SADI and WSDL is that SADI uses RDF for message content, whereas WSDL conventionally uses XML. WSDL uses XML Schema `[`[XML Schema](NormativeReferences#XML_Schema.md)`]` as the default schema language for message structures, but is also extensible to use other schema languages. To date, there have been proposals for extensions that use Document Type Definitions (DTDs) and RelaxNG as alternative schema languages for WSDL. In principle, a similar extension could be created for the use of OWL as a schema language, although none has been put forward to date.
+
+SADI uses only a small, fixed subset of the behaviours that can described by WSDL. In the terminology of WSDL, SADI services must have:
+
+  * _one operation per service_, where an _operation_ is interaction between the client and the service to accomplish some result.  An operation is analogous to a function call in a programming language.
+  * _one endpoint per service_, where an _endpoint_ is an URL where the client interacts with the service
+  * _a fixed protocol_, where the _protocol_ is the mechanism for transporting messages between the client and the service.  All SADI services use HTTP as the underlying protocol.
+  * _a fixed message exchange pattern_, where a _message exchange pattern_ is a sequence of messages that are exchanged between a client and a service during an operation. SADI services have one of two possible message exchange patterns, corresponding to [synchronous services](SynchronousServices.md) and [asynchronous services](AsynchronousServices.md).
+
+The only variables of a SADI service interface are the graph representations of the input data, the output data, and the service execution parameters, which are defined by the [input OWL class](InputAndOutputOWLClasses#The_Input_OWL_Class.md), the [output OWL class](InputAndOutputOWLClasses#The_Output_OWL_Class.md), and the [parameter OWL class](ParameterOWLClass#The_Parameter_OWL_Class.md), respectively.  For SADI, these three OWL classes are the functional analog of a WSDL service description file.
+
+## Semantic Annotations for WSDL (SAWSDL) ##
+
+SAWSDL `[`[SAWSDL](NormativeReferences#SAWSDL.md)`]` is a small set of extensions to the WSDL XML schema that facilitates the mapping of XML-based services to a semantic data model (e.g. RDF). Specifically, SAWSDL defines 3 additional XML attributes for WSDL:
+
+  * `modelReference`
+  * `loweringSchemaMapping`
+  * `liftingSchemaMapping`
+
+_modelReference_ is used to annotate elements of a WSDL interface with entities from a semantic data model, such as class URIs from an OWL ontology.  _liftingSchemaMapping_ and _loweringSchemaMapping_ are used to provide mappings of XML datatypes to and from a semantic data model, respectively. The values of _liftingSchemaMapping_ and _loweringSchema_ are URIs that identify documents that define the transformation, but SAWSDL is agnostic with respect to the specific mapping language that is used.  For example, when translating between XML and RDF, the required mappings might be accomplished with XSLT for the lifting transformation and SPARQL followed by XSLT for the lowering transformation.
+
+SADI is independent of SAWSDL in that it aims to describe services that natively consume and produce semantic data, where SAWSDL aims to annotate services in such a way that their output can be interpreted semantically. SAWSDL can be used as an adaptor layer that maps a WSDL service to the expected behaviour of a SADI service.
+
+## OWL-S and the Web Service Modeling Ontology (WSMO) ##
+
+OWL-S `[`[OWL-S](NormativeReferences#OWL-S.md)`]` and WSMO `[`[WSMO](NormativeReferences#WSMO.md)`]` are two previous Semantic Web Services standards that are similar in their goals and approaches. Both standards define ontologies for describing the _capablities_ and _choreographies_ of stateful web services, where capabilities are changes to the world that are effected by a service, and choreographies are the sequences of messages exchanged between a client and a service during an interaction. (Choreographies correspond to message exchange patterns in WSDL.) OWL-S and WSMO exceed the descriptive power of WSDL by providing a generic framework for modeling both the internal state of a service and the state of external variables that are affected by the service (e.g. a credit card balance). Transitions between states are formally described by boolean formulas that express preconditions and postconditions for an event.
+
+The principal difference between OWL-S and WSMO is that OWL-S uses OWL as its ontology language, whereas WSMO uses a more expressive language called the Web Service Modeling Language (WSML). The OWL-S and WSMO standards are complex, and the development of software agents to coordinate OWL-S/WSMO services to accomplish higher order tasks in an ongoing area of research.
+
+In comparison to OWL-S and WSMO, SADI is a simpler standard that is limited to the description of stateless services. SADI uses OWL ontologies only for defining the schema of input data, output data, and service execution parameters, and not to define the effects or choreography of a service.  The choreography of a SADI service is fixed to one of two possibilities, corresponding to [synchronous services](SynchronousServices.md) and [asynchronous services](AsynchronousServices.md) respectively.

@@ -1,0 +1,261 @@
+## Table of Contents ##
+
+
+Building services in Python is very easy. They are also easy to publish as WSGI applications or incorporated into other frameworks such as Pylons and TurboGears. We will be creating a Python version of the service described in [What is a SADI service?](http://sadiframework.org/content/getting-involved/what-is-a-sadi-service/).
+
+# Requirements #
+
+SADI requires Python 2.6 or greater, and can be installed using easy\_install:
+
+```
+easy_install sadi
+```
+
+It can also be installed using pip:
+
+```
+pip install sadi
+```
+
+Python SADI services can be added to Pylons or TurboGears applications as [Controllers](http://docs.pylonsproject.org/projects/pylons-webframework/en/latest/controllers.html) or can be run by themselves. SADI Services can also be used as WSGI applications.
+
+# Defining input and output OWL classes #
+
+Your service’s input and output OWL classes describe its interface to the world. The property restrictions on the input class define the properties your service needs to operate and the property restrictions on the output class define the properties your service will attach.
+
+As described in [What is a SADI service?](http://sadiframework.org/content/getting-involved/what-is-a-sadi-service/), your input and output classes must each be identified by a URL that resolves to the class definition. Before you can proceed, you must have created the ontology describing your input and output and hosted it such that this is the case. Ontology design is beyond the scope of this document, but see DefiningInputAndOutputOWLClasses for some SADI-specific tips.
+
+For our example, our input class will be http://sadiframework.org/examples/hello.owl#NamedIndividual. The class definition is reproduced below:
+
+```
+<owl:Class rdf:ID="NamedIndividual"> 
+  <owl:equivalentClass> 
+    <owl:Restriction> 
+      <owl:onProperty rdf:resource="http://xmlns.com/foaf/0.1/name"/> 
+      <owl:minCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int">1</owl:minCardinality> 
+    </owl:Restriction> 
+  </owl:equivalentClass> 
+</owl:Class>
+```
+
+This class specifies a single property restriction: that there is at least one value of the http://xmlns.com/foaf/0.1/name property. As suggested in DefiningInputAndOutputOWLClasses, this is a necessary and sufficient condition for class membership (indicated by the `owl:equivalentClass` construct), allowing any individual with a `foaf:name` to be dynamically identified as a `NamedIndividual`.
+
+For our example, our output class will be http://sadiframework.org/examples/hello.owl#GreetedIndividual. The class definition is reproduced below:
+
+```
+<owl:Class rdf:ID="GreetedIndividual"> 
+  <owl:equivalentClass> 
+    <owl:Restriction> 
+      <owl:onProperty rdf:resource="#greeting"/> 
+      <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/> 
+    </owl:Restriction> 
+  </owl:equivalentClass> 
+</owl:Class>
+```
+
+This class also specifies a single property restriction, indicating that the service will attach a value of the http://sadiframework.org/examples/hello.owl#greeting property that is an `xsd:string`.
+
+Note that, as mentioned in DefiningInputAndOutputOWLClasses, the [hello.owl http://sadiframework.org/examples/hello.owl] ontology completely specifies the properties it uses: it defines the `greeting` property and imports the `foaf:name` property.
+
+# Creating the Python SADI service #
+
+A python SADI service is very simple, and takes very few lines to define in a python file. Create a file called example.py to edit. First, we need to import the SADI and RDFlib modules:
+
+```
+import sadi
+from rdflib import *
+```
+
+Next, we need to define the namespaceswe need to use in our code:
+
+```
+hello=Namespace("http://sadiframework.org/examples/hello.owl#")
+foaf=Namespace("http://xmlns.com/foaf/0.1/")
+```
+
+We also define our class. We need to set some service metadata (including organization), input and output classes, and the service body, called process():
+
+```
+class ExampleService(sadi.Service):
+    label = "Hello, world"
+    serviceDescriptionText = 'A simple "Hello, World" service that reads a name and attaches a greeting.'
+    comment = 'A simple "Hello, World" service that reads a name and attaches a greeting.'
+    serviceNameText = "Hello, world (python)"
+    name = "example"
+
+    def getOrganization(self):
+        result = self.Organization()
+        result.add(RDFS.label,Literal("Example Organization"))
+        result.add(sadi.mygrid.authoritative, Literal(False))
+        result.add(sadi.dc.creator, URIRef('mailto:john.smith@example.com'))
+        return result
+
+    def getInputClass(self):
+        return hello.NamedIndividual
+
+    def getOutputClass(self):
+        return hello.GreetedIndividual
+
+    def process(self, input, output):
+        pass
+```
+
+Finally, in order to execute the service by itself, add a main method:
+
+```
+resource = ExampleService()
+
+if __name__ == "__main__":
+    sadi.serve(resource, port=9090)
+```
+
+This lets you run your service from the command line, which can help with testing.
+
+# Adding business logic #
+
+Your service is now ready for some business logic. SADI in python uses the [resource](https://rdflib.readthedocs.org/en/latest/apidocs/rdflib.html#module-rdflib.resource) module from [rdflib](https://rdflib.readthedocs.org/en/latest/), which acts very much like the Resource objects in Jena. Read the [rdflib documentation](http://rdflib.readthedocs.org/en/latest/apidocs/rdflib.html) for further information about how to work with it. Business logic goes in the process() function. Turning a Named Individual into a GreetedIndividual is simple:
+
+```
+    def process(self, input, output):
+        output.set(hello.greeting, Literal("Hello, "+input.value(foaf.name).value))
+```
+
+That's all we need to implement our SADI service!
+
+# Running your service #
+
+In order to test your service, it must first be running. If you are working from the command line, execute the following command:
+
+```
+$ python example.py
+```
+
+Note: while your service is running, you will not be able to execute further commands in that terminal window.
+
+# Testing your service #
+
+In order to test your service, you need an input RDF document and the corresponding expected output. For our example, we will use the following RDF input, available at http://sadiframework.org/test/hello-input.rdf.
+
+```
+<http://sadiframework.org/examples/hello-input.rdf#1>
+    <http://xmlns.com/foaf/0.1/name> "Guy Incognito";
+    a <http://sadiframework.org/examples/hello.owl#NamedIndividual>.
+```
+
+Save this input to a file called "exampleInput.ttl". Here is the corresponding expected output:
+
+```
+@prefix ns1: <http://sadiframework.org/examples/hello.owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://sadiframework.org/examples/hello-input.rdf#1> a ns1:GreetedIndividual ;
+    ns1:greeting "Hello, Guy Incognito" .
+```
+
+If you are working from the command line, execute the following curl command to test the service (remember that the SADI service is running in your original terminal, so you will have to open a new terminal and change to the sadi.service.skeleton directory):
+
+```
+$ curl -s -H Content-Type:text/turtle -H Accept:text/turtle  -X POST --data-binary @exampleInput.ttl http://localhost:9090/
+```
+
+_Note: if you are copying-and-pasting the above command, be sure that it all appears on one line._
+
+
+# Writing Asynchronous SADI Services #
+
+There are two ways to write an asynchronous SADI service: the easy way or the hard way. The easy way provides an execution thread for each instance that is submitted. It does nothing fancy with thread pooling (yet), but provides a simple interface that looks just like a synchronous SADI service. The hard way provides a different interface, but provides more control over how the service is executed, allowing implementers to write the request to secondary submission services (like a message queueing system or workflow submission system) and check for status when the user asks for it.
+
+## Asynchronous SADI Services the Easy Way ##
+
+Instead of implementing the `process()` function, instead implement the `async_process()` function:
+
+```
+    def async_process(self, input, output):
+        output.set(hello.greeting, Literal("Hello, "+input.value(foaf.name).value))
+```
+
+That's it. You now have an asynchronous SADI service. Do not attempt to also override the `process()` function as well, as that will short-circuit the asynchronous functionality.
+
+## Asynchronous SADI Services the Hard Way ##
+
+To do more advanced handling of asynchronous requests, you will need to write two methods: `defer()` and `result()`:
+
+```
+    def defer(self, input, task):
+        submit_to_external_processor(input,task)
+
+    def result(self, task):
+        try:
+            graph = check_external_processor(task)
+        except:
+            raise sadi.HTTPError('404 Not Found')
+        if graph == None:
+            raise sadi.IncompleteError()
+        return graph
+```
+
+`defer()` accepts a task and passes it on to whatever mechanism it uses. The input data is available, as before, via the input resource, while a URI for the task (the actual URL that the client will access the results from) should be used to identify the task in the future. When a user asks for the status of a task, they will use that URI to identify it. `result()` is called whenever the user asks for the result of processing. If the task is complete, return a RDFlib Graph object that contains the result. If it is not, raise a `sadi.IncompleteError`. If the task is unheard of, then raise a 404 Not Found error using `sadi.HTTPError`.
+
+# SADI Attachment Support #
+
+SADI in Python supports the inclusion of attachments using the [multipart/related Content Type](http://tools.ietf.org/html/rfc2387). To submit data with attachments, the Content-Type header must be set to "multipart/related" and include a boundry parameter. The first unnamed part that is has a parseable RDF content type will be treated as the input graph. All named attachments that have a content disposition that contains a valid URI will be available for access via the `sadi.Service.get()` function.
+
+Services that call `self.get("http://example.com/#",input)` or pass a `rdflib.URIRef` object will get back a [werkzeug.wrappers.Response](http://werkzeug.pocoo.org/docs/wrappers/#werkzeug.wrappers.Response) object containing the requested content from the attachment. If there is no attachment for the requested URI, the URI will be treated as a URL and a download attempt will be made using [urllib2](http://docs.python.org/2/library/urllib2.html).
+
+**Technical Note:** the input object must be passed to `sadi.Service.get()` in order to provide access to its underlying graph, which in our implementation, include references to all named attachments. This is to keep SADI service implementations re-entrant, so that more than one request can be processed concurrently.
+
+# Deploying and registering your service #
+
+The SADI service can be deployed to Apache using mod\_wsgi using [these instructions](https://code.google.com/p/modwsgi/wiki/QuickConfigurationGuide), or can be incorporated into other WSGI applications such as [Pylons](http://docs.pylonsproject.org/projects/pylons-webframework/en/latest/wsgi_support.html), [Turbogears](http://turbogears.org/2.1/docs/main/WSGIAppControllers.html), or [CKAN](http://ckan.org).
+
+Once your service has been deployed, you can register it by visiting http://sadiframework.org/registry/ and submitting the URL of your service in the form on that page. If you wish to unregister your service later, simply undeploy it and resubmit the now invalid URL.
+
+# Integrating your service into TurboGears 2.3 #
+[TurboGears](http://turbogears.org/) has some capabilities that allow for things like URL routing that make traditional WSGI applications unsuitable as controllers. Integrating a SADI service therefore requires a little bit of shim code to work. The main issue is that the request body seems to become unavailable by the time the service is actually called. We need to intercept that body before it goes away. To start, add the following line to the `_call_` method of the BaseController class in your project:
+
+```
+class BaseController(TGController):
+    def __call__(self, environ, start_response):
+        environ['request_body'] = start_response.request.body
+```
+
+The next step is to define a `wsgi_wrap` function that shims the service:
+
+```
+def wsgi_wrap(fn):
+    '''Decorate a WSGI application so that it can work within a TurboGears controller.'''
+    def call(self):
+        tglocals = request.environ['tg.locals']
+        def start_response(status, headers, exc_info=None):
+            response.status = status
+            response.headers.update(headers)
+            if exc_info:
+                response.headerlist = exc_info
+        tglocals.request.body = request.environ['request_body']
+        return fn(self,tglocals.request.environ, start_response)
+    return call
+```
+
+Finally, to add a SADI service to a TurboGears controller, instantiate it privately and call it via a controller method. If we could decorate callable classes, this would be even simpler, but this will work:
+
+```
+class MyController(BaseController):
+    _example = ExampleService()
+
+    @expose()
+    @wsgi_wrap
+    def example(self,environ, start_response):
+        return self._example(environ, start_response)
+```
+
+# Integrating your service into Flask #
+[Flask](http://flask.pocoo.org/) is a very simple python microframework that punches well above its weight. It is much simpler to integrate SADI services into Flask, as it supports easy integration with all WSGI services. If you have implemented the example in the tutorial and instantiated it at `resource` and have instantiated a Flask application at `app`, you can route the path `/example` to the service like this:
+
+```
+@app.route("/example",methods=['POST','GET'])
+def example():
+    return resource
+```

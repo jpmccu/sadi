@@ -1,0 +1,50 @@
+# Introduction #
+
+Some service developers may wish to test their SADI services with the SHARE client locally before publicly registering them.  In order to do so, you'll have to set up a local registry and configure the SHARE client to use it.
+
+# Setting up a local SADI registry #
+
+Download the [sadi-registry webapp](http://code.google.com/p/sadi/downloads/detail?name=sadi-registry-0.0.5.war) and deploy it to a servlet container.
+
+Once it is unpacked, edit the sadi-registry/WEB-INF/classes/sadi.registry.properties file to match your desired persistence configuration.
+
+# Configuring the SHARE query client to use your local SADI registry #
+
+Create a file in your home directory called sadi.properties and add your local registry to it as follows:
+```
+# add a local registry read from a SPARQL endpoint
+sadi.registry.local = ca.wilkinsonlab.sadi.client.RegistryImpl
+sadi.registry.local.endpoint = http://biordf.net/sparql
+sadi.registry.local.graph = http://sadiframework.org/registry/
+
+# add a local registry read from a JDBC database
+sadi.registry.local = ca.wilkinsonlab.sadi.client.RegistryImpl
+sadi.registry.local.driver = com.mysql.jdbc.Driver
+sadi.registry.local.dsn = jdbc:mysql://localhost/test_registry
+sadi.registry.local.username = sadi
+sadi.registry.local.password = ******
+
+# add a local registry read from a file
+sadi.registry.local = ca.wilkinsonlab.sadi.client.RegistryImpl
+sadi.registry.local.file = /tmp/sadi-registry.rdf
+```
+
+Run the SHARE command-line client as normal and it should use your local registry in addition to the default SADI registries.  If you wish to use _only_ your local registry, add the following to your sadi.properties file:
+```
+sadi.registry.biomoby.exclude = true
+sadi.registry.sparql.exclude = true
+sadi.registry.sadi.exclude = true
+```
+
+You can add as many registries as you like to your `sadi.properties` file as long as you give each a unique name. For example:
+```
+sadi.registry.foo = ca.wilkinsonlab.sadi.client.RegistryImpl
+sadi.registry.foo.file = /tmp/first-registry.rdf
+
+sadi.registry.bar = ca.wilkinsonlab.sadi.client.RegistryImpl
+sadi.registry.bar.file = /tmp/second-registry.rdf
+```
+Any custom registry can be disabled by setting its `exclude` property to `true`, as with the default registries above.
+
+# Related pages #
+  * [Using the SHARE command-line client](http://code.google.com/p/sadi/wiki/SHAREClient)

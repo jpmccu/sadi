@@ -1,0 +1,3 @@
+## Security Considerations ##
+
+SADI services and clients are subject to the same security considerations as servers and clients that use the HTTP protocol, as described in Section 15 of `[`[HTTP](NormativeReferences#HTTP.md)`]`.
