@@ -45,12 +45,14 @@ class CSVSerializer:
         return frir.TabularDigest
 
 class DefaultSerializer:
-    def __init__(self,inputFormat,outputFormat=None):
+    def __init__(self,inputFormat,outputFormat=None, graphAware=False):
         self.inputFormat = inputFormat
         if outputFormat == None:
             self.outputFormat = inputFormat
         else:
             self.outputFormat = outputFormat
+        self.graphAware = graphAware
+
     def bindPrefixes(self, graph):
         pass
         #for n in ns.all().items():
@@ -67,10 +69,22 @@ class DefaultSerializer:
             #    inputSource.setCharacterStream(StringIO(content))
             #    graph.parse(inputSource,format=self.inputFormat)
             #else:
-            graph.parse(StringIO(content),format=self.inputFormat)
+            graph.parse(data=content,format=self.inputFormat)
         else:
             graph.parse(content,format=self.inputFormat)
         return frir.RDFGraphDigest
+
+
+class JsonLdSerializer (DefaultSerializer):
+    def __init__(self):
+        DefaultSerializer.__init__(self,'json-ld',graphAware=True)
+    
+    def serialize(self,graph):
+        context = {}
+        if hasattr(graph, 'context'):
+            context = graph.context
+        return graph.serialize(format="json-ld", 
+                               context=context, auto_compact=True)
 
 class RDFaSerializer(DefaultSerializer):
     def __init__(self):
@@ -83,7 +97,7 @@ class RDFaSerializer(DefaultSerializer):
 
             document, errors = tidy_document(content,options={"numeric-entities":1})
             content = document
-            if len(errors) > 0:
+            #if len(errors) > 0:
                 #print errors
         except:
             pass
@@ -124,6 +138,8 @@ class MultipartSerializer:
         raise Exception("Multipart serialization is unsupported")
             
 class JSONSerializer:
+    graphAware = False
+
     def serialize(self,graph):
 
         def getValue(node):

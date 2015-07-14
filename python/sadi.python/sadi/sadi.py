@@ -84,7 +84,7 @@ class IncompleteError(Exception):
     def __str__(self):
         return repr(self.value)
 
-class SADIGraph(Graph):
+class SADIGraph(ConjunctiveGraph):
     attachments = {}
 
     def get(self, uri, accept=None):
@@ -119,6 +119,7 @@ contentTypes.update({
             'text/n3':DefaultSerializer('n3'),
             'text/html':RDFaSerializer(),
             'application/json':JSONSerializer(),
+            'application/ld+json':JsonLdSerializer(),
             'text/csv':CSVSerializer(','),
             'text/comma-separated-values':CSVSerializer(','),
             'text/tab-separated-values':CSVSerializer('\t'),
