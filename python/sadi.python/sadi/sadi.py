@@ -4,6 +4,7 @@ import rdflib
 import mimeparse
 import collections
 import sys
+from uuid import uuid4
 from webob import Request
 from .utils import create_id
 from threading import Thread
@@ -21,9 +22,16 @@ rdflib.plugin.register('sparql', rdflib.query.Result,
 
 dc = Namespace("http://purl.org/dc/terms/")
 mygrid = Namespace("http://www.mygrid.org.uk/mygrid-moby-service#")
+nanopub = Namespace("http://www.nanopub.org/nschema#")
 
 # Install required libraries using easy_install:
 # sudo easy_install 'rdflib>=3.0' surf rdfextras surf.rdflib
+
+NS = Namespace("")
+
+def _skolemize():
+    '''Creates a simple generator for UUID4 IDs.'''
+    return NS[uuid4().hex]
 
 class Individual(Resource):
     class item():
@@ -175,6 +183,16 @@ class Service:
     def annotateServiceDescription(self, desc):
         pass
 
+    def getOutputClass(self):
+        return self.output_class
+
+    def getInputClass(self):
+        return self.input_class
+
+    input_class = OWL.Thing
+
+    output_class = OWL.Thing
+
     def getServiceDescription(self):
         if self.serviceDescription == None:
             self.serviceDescription = Graph()
@@ -233,16 +251,28 @@ class Service:
         o = OutputClass(i.identifier)
         return o
 
+    def explain(self, i, o, provenance, pubinfo):
+        pass
+
     def processGraph(self,content, type):
         inputGraph = SADIGraph()
         self.deserialize(inputGraph, content, type)
-        outputGraph = Graph()
-        OutputClass = OntClass(outputGraph,self.getOutputClass())
+        outputGraph = ConjunctiveGraph()
 
         instances = self.getInstances(inputGraph)
         for i in instances:
+            pub = outputGraph.resource(_skolemize())
+            pub.add(RDF.type, nanopub.Nanopublication)
+            assertion = Graph(outputGraph.store, pub.identifier+"_assertion")
+            pub.add(nanopub.hasAssertion, assertion.identifier)
+            OutputClass = OntClass(assertion,self.getOutputClass())
             o = OutputClass(i.identifier)
             self.process(i, o)
+            provenance = Graph(outputGraph.store, pub.identifier+"_provenance")
+            pub.add(nanopub.hasProvenance, provenance.identifier)
+            pubinfo = Graph(outputGraph.store, nanopub.identifier+"_pubinfo")
+            pub.add(nanopub.hasPublicationInfo, pubinfo.identifier)
+            self.explain(i, o, provenance.resource(i), pubinfo.resource(i))
         return outputGraph
 
     def defer(self, i, task):
