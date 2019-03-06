@@ -7,6 +7,7 @@ import rdflib
 from . import mimeparse
 import collections
 import email
+import imp
 from io import StringIO, BytesIO
 from xml.sax.xmlreader import InputSource
 
@@ -17,8 +18,8 @@ def setDefaultEncoding():
     currentStdIn = sys.stdin
     currentStdErr = sys.stderr
     
-    reload(sys)
-    sys.setdefaultencoding('utf-8')
+    imp.reload(sys)
+    # sys.setdefaultencoding('utf-8')
     
     sys.stdout = currentStdOut
     sys.stdin = currentStdIn
