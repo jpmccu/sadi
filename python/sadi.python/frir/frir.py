@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import hex
+from builtins import map
+from builtins import str
+from builtins import object
 from rdflib import *
 
 import re, os, sys
@@ -9,8 +15,8 @@ from stat import *
 import rdflib
 import rdflib.term
 import hashlib
-import httplib
-from urlparse import urlparse, urlunparse
+import http.client
+from urllib.parse import urlparse, urlunparse
 import dateutil.parser
 from datetime import datetime
 
@@ -23,7 +29,7 @@ import uuid
 
 from sadi.serializers import *
 
-from StringIO import StringIO
+from io import StringIO
 
 import fileinput
 import binascii
@@ -106,7 +112,7 @@ def _hetero_tuple_key(x):
     "Sort like Python 2 - by name of type, then by value. Expects tuples."
     return tuple((type(a).__name__, a) for a in x)
 
-class RDFGraphDigest:
+class RDFGraphDigest(object):
 
     def __init__(self,prefix="tag:tw.rpi.edu,2011:"):
         print('0', self)
@@ -305,7 +311,7 @@ class RDFGraphDigest:
                     frir.TabularDigest]
         else:
             value = self.total
-            if type(value) == long:
+            if type(value) == int:
                 value = base64.urlsafe_b64encode(buffer(packl(value)))
             return [self.algorithm,
                     value,
@@ -431,7 +437,7 @@ typeExtensions = {
 
 def getFormat(contentType):
     if contentType == None: return [ "application/rdf+xml",serializeXML]
-    type = mimeparse.best_match([x for x in contentTypes.keys() if x != None],contentType)
+    type = mimeparse.best_match([x for x in list(contentTypes.keys()) if x != None],contentType)
     if type != None: return [type,contentTypes[type]]
     else: return [ "application/rdf+xml",serializeXML]
 
