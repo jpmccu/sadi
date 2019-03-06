@@ -1,7 +1,8 @@
+from __future__ import absolute_import
 from rdflib import *
 import json
 import rdflib
-import mimeparse
+from . import mimeparse
 import collections
 import email
 from io import StringIO, BytesIO

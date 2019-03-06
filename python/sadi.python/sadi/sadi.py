@@ -1,7 +1,9 @@
+from __future__ import print_function
+from __future__ import absolute_import
 from rdflib import *
 from rdflib.resource import *
 import rdflib
-import mimeparse
+from . import mimeparse
 import collections
 import sys
 from uuid import uuid4
@@ -11,7 +13,7 @@ from threading import Thread
 import urllib2
 from werkzeug.wrappers import BaseResponse as Response
 
-from serializers import *
+from .serializers import *
 
 from io import StringIO
 
@@ -368,7 +370,7 @@ def serve(resource,port):
     from wsgiref.simple_server import make_server
 
     httpd = make_server('', port, resource)
-    print "Serving HTTP on port",port,"..."
+    print("Serving HTTP on port",port,"...")
 
     # Respond to requests until process is killed
     httpd.serve_forever()
