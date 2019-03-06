@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sadi
 from sadi.serializers import JSONSerializer, RDFaSerializer
 from rdflib import *
@@ -63,7 +64,7 @@ def descriptor_accept_types_test():
         resp = c.get('/',headers={'Accept':mimetype})
         assert resp.status_code == 200
         g = Graph()
-        print resp.data
+        print(resp.data)
         g.parse(StringIO(unicode(resp.data)),format=of)
         assert len(g) > 0
     for mimetype, f, of in supported_mimetypes:
@@ -75,7 +76,7 @@ def json_descriptor_test():
     resp = c.get('/',headers={'Accept':'application/json'})
     assert resp.status_code == 200
     g = Graph()
-    print resp.data
+    print(resp.data)
     s = JSONSerializer()
     s.deserialize(g,resp.data,"application/json")
     assert len(g) > 0
@@ -88,7 +89,7 @@ def oddball_accept_service_test():
     resp = c.post('/',data=testInput, headers={'Content-Type':'text/turtle','Accept':'image/png'})
     assert resp.status_code == 200
     g = Graph()
-    print resp.data
+    print(resp.data)
     g.parse(StringIO(unicode(resp.data)),format="xml")
     assert len(g) > 0
     
@@ -100,7 +101,7 @@ def service_test():
     resp = c.post('/',data=testInput, headers={'Content-Type':'text/turtle','Accept':'*/*'})
     assert resp.status_code == 200
     g = Graph()
-    print resp.data
+    print(resp.data)
     g.parse(StringIO(unicode(resp.data)),format="turtle")
     assert len(g) > 0
 
@@ -114,7 +115,7 @@ def service_unicode_test():
                       headers={'Content-Type':mimetype,'Accept':mimetype})
         assert resp.status_code == 200
         g = Graph()
-        print resp.data
+        print(resp.data)
         g.parse(StringIO(unicode(resp.data,'utf-8')),format=of)
         assert len(g) > 0
     for mimetype, f, of in supported_mimetypes:
@@ -131,7 +132,7 @@ def service_accept_content_types_test():
                       headers={'Content-Type':mimetype,'Accept':mimetype})
         assert resp.status_code == 200
         g = Graph()
-        print resp.data
+        print(resp.data)
         g.parse(StringIO(unicode(resp.data)),format=of)
         assert len(g) > 0
     for mimetype, f, of in supported_mimetypes:
@@ -156,7 +157,7 @@ def service_rdfa_content_type_test():
     assert resp.status_code == 200
     g = Graph()
     g.parse(StringIO(unicode(resp.data)),format='turtle')
-    print resp.data
+    print(resp.data)
     assert len(g) > 0
 
         
@@ -183,7 +184,7 @@ def service_JSON_accept_content_type_test():
                   headers={'Content-Type':'application/json','Accept':'application/json'})
     assert resp.status_code == 200
     g = Graph()
-    print resp.data
+    print(resp.data)
     s = JSONSerializer()
     s.deserialize(g,resp.data,"application/json")
     assert len(g) > 0
@@ -204,10 +205,10 @@ def curl_turtle_comment_test():
     thread.daemon = True
     thread.start()
     data = subprocess.check_output('curl -s -H Content-Type:text/turtle -H Accept:text/turtle  -X POST --data-binary @exampleInput.ttl http://localhost:9090/'.split(" "))
-    print data
+    print(data)
     g = Graph()
     g.parse(StringIO(unicode(data)),format='turtle')
-    print "Output graph has", len(g), "triples."
+    print("Output graph has", len(g), "triples.")
     assert len(g) > 0
 
 def make_relative(uri):
@@ -234,10 +235,10 @@ def wrong_curl_turtle_comment_test():
     thread.daemon = True
     thread.start()
     data = subprocess.check_output('curl -s -H Content-Type:text/turtle -H Accept:text/turtle  -X POST -d @exampleInput.ttl http://localhost:9090/'.split(" "))
-    print data
+    print(data)
     g = Graph()
     g.parse(StringIO(unicode(data)),format='turtle')
-    print "Output graph has", len(g), "triples."
+    print("Output graph has", len(g), "triples.")
     assert len(g) == 0
 
 def get_pragmas(response):
@@ -262,7 +263,7 @@ def async_service_test():
     notDone = True
     while notDone:
         idb = make_relative(idb)
-        print idb
+        print(idb)
         resp = c.get(idb,headers={'Accept':'text/turtle'})
         if resp.status_code == 302:
             location = resp.headers['Location']
@@ -276,7 +277,7 @@ def async_service_test():
                 wait = int(pragma['sadi-please-wait'])
                 time.sleep(wait/1000.0)
             except:
-                print traceback.print_exc()
+                print(traceback.print_exc())
                 assert False
         elif resp.status_code == 200:
             notDone = False
@@ -289,7 +290,7 @@ def async_service_test():
     jim = URIRef('http://tw.rpi.edu/instances/JamesMcCusker')
     triples = [x for x in g[jim]]
     assert len(triples) > 0
-    print g.serialize(format="turtle")
+    print(g.serialize(format="turtle"))
 
 prov = Namespace("http://www.w3.org/ns/prov#")
 hello=Namespace("http://sadiframework.org/examples/hello.owl#")
@@ -328,7 +329,7 @@ def service_get_no_attachment_test():
     resp = c.post('/',data=testInput, headers={'Content-Type':'text/turtle','Accept':'*/*'})
     assert resp.status_code == 200
     g = Graph()
-    print resp.data
+    print(resp.data)
     g.parse(StringIO(unicode(resp.data)),format="turtle")
     assert len(g) > 0
 
@@ -348,7 +349,7 @@ Content-Disposition: attachment; filename="http://www.google.com"
                                                'Accept':'*/*'})
     assert resp.status_code == 200
     g = Graph()
-    print resp.data
+    print(resp.data)
     assert '<html><head><title>Welcome to Google.</title></head><body><h1>Hello, World!</h1></body></html>' in resp.data
     g.parse(StringIO(unicode(resp.data)),format="turtle")
     assert len(g) > 0
@@ -396,8 +397,8 @@ def frir_test():
         testInputGraph.parse(StringIO(rdf),format="turtle")
         testInputOther = unicode(testInputGraph.serialize(format=f))
         digest = get_digest_value(testInputOther,mimetype)
-        print rdf
-        print f, ttlDigest, digest
+        print(rdf)
+        print(f, ttlDigest, digest)
         assert ttlDigest == digest
 
     for rdf in testInputs:
@@ -532,5 +533,5 @@ def rdfa_parser_test():
     import urllib
     doc = urllib.urlopen('http://www.3kbo.com/examples/rdfa/simple.html').read()
     parser.deserialize(graph,doc,'text/html')
-    print graph.serialize(format="turtle")
+    print(graph.serialize(format="turtle"))
     assert len(graph) > 10
