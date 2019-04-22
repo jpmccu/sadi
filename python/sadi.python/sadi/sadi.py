@@ -1,17 +1,24 @@
+from __future__ import print_function
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from past.builtins import basestring
+from builtins import object
 from rdflib import *
 from rdflib.resource import *
 import rdflib
-import mimeparse
+from . import mimeparse
 import collections
 import sys
 from uuid import uuid4
 from webob import Request
 from .utils import create_id
 from threading import Thread
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 from werkzeug.wrappers import BaseResponse as Response
 
-from serializers import *
+from .serializers import *
 
 from io import StringIO
 
@@ -34,7 +41,7 @@ def _skolemize():
     return NS[uuid4().hex]
 
 class Individual(Resource):
-    class item():
+    class item(object):
         def __init__(self, subject, predicate):
             self._subject = subject
             self._predicate = predicate
@@ -107,8 +114,8 @@ class SADIGraph(ConjunctiveGraph):
             headers = {}
             if accept != None:
                 headers['Accept'] = accept
-            request = urllib2.Request(str(uri),headers=headers)
-            response = urllib2.urlopen(request)
+            request = urllib.request.Request(str(uri),headers=headers)
+            response = urllib.request.urlopen(request)
             info = response.info()
             data = response.read()
             mimetype = info.getheader("Content-Type")
@@ -136,7 +143,7 @@ contentTypes.update({
 def getFormat(contentType):
     if contentType == None:
         return [ "application/rdf+xml",contentTypes[None]]
-    type = mimeparse.best_match(["application/rdf+xml"]+[x for x in contentTypes.keys() if x != None],
+    type = mimeparse.best_match(["application/rdf+xml"]+[x for x in list(contentTypes.keys()) if x != None],
                                 contentType)
     if type == '' or type == None: 
         return ["application/rdf+xml",DefaultSerializer('xml')]
@@ -151,7 +158,7 @@ def serialize(graph, accept):
     f = getFormat(accept)
     return f[1].serialize(graph)
 
-class Service:
+class Service(object):
     serviceDescription = None
 
     comment = None
@@ -338,7 +345,7 @@ class Service:
             ('Content-type', acceptType[0]+'; charset=utf-8'),
             ('Access-Control-Allow-Origin','*')
         ]
-        content = unicode(self.request.body,'utf-8')
+        content = str(self.request.body,'utf-8')
         graph = self.processGraph(content, self.request.headers['Content-Type'])
         start_response(self.status, response_headers)
         self.request = None
@@ -368,7 +375,7 @@ def serve(resource,port):
     from wsgiref.simple_server import make_server
 
     httpd = make_server('', port, resource)
-    print "Serving HTTP on port",port,"..."
+    print("Serving HTTP on port",port,"...")
 
     # Respond to requests until process is killed
     httpd.serve_forever()

@@ -7,7 +7,7 @@ setup(
     version = "0.5.6",
     packages = find_packages(exclude=['test.py',"example.py"]),
 
-    install_requires = ['rdflib>=4.0', "Werkzeug", 'webob', 'python-dateutil','pytidylib'],
+    install_requires = ['rdflib>=4.0', "Werkzeug", 'webob', 'python-dateutil','pytidylib', 'future'],
     setup_requires=['setuptools', 'nose>=1.0', 'nose-cov>=1.6','werkzeug'],
     # metadata for upload to PyPI
     author = "James McCusker",

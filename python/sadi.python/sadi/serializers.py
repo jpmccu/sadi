@@ -1,9 +1,13 @@
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
 from rdflib import *
 import json
 import rdflib
-import mimeparse
+from . import mimeparse
 import collections
 import email
+import imp
 from io import StringIO, BytesIO
 from xml.sax.xmlreader import InputSource
 
@@ -14,8 +18,8 @@ def setDefaultEncoding():
     currentStdIn = sys.stdin
     currentStdErr = sys.stderr
     
-    reload(sys)
-    sys.setdefaultencoding('utf-8')
+    imp.reload(sys)
+    # sys.setdefaultencoding('utf-8')
     
     sys.stdout = currentStdOut
     sys.stdin = currentStdIn
@@ -25,7 +29,7 @@ setDefaultEncoding()
 
 frir = Namespace("http://purl.org/twc/ontology/frir.owl#")
 
-class CSVSerializer:
+class CSVSerializer(object):
     def __init__(self,delimiter=","):
         self.delimiter = delimiter
     def serialize(self,graph):
@@ -44,7 +48,7 @@ class CSVSerializer:
             rowNum += 1
         return frir.TabularDigest
 
-class DefaultSerializer:
+class DefaultSerializer(object):
     def __init__(self,inputFormat,outputFormat=None, graphAware=False):
         self.inputFormat = inputFormat
         if outputFormat == None:
@@ -62,7 +66,7 @@ class DefaultSerializer:
         self.bindPrefixes(graph)
         return graph.serialize(format=self.outputFormat,encoding='utf-8')
     def deserialize(self,graph, content,mimetype):
-        if type(content) == str or type(content) == unicode:
+        if type(content) == str or type(content) == str:
             #if self.inputFormat == 'xml':
             #    inputSource = InputSource()
             #    inputSource.setEncoding('utf-8')
@@ -90,7 +94,7 @@ class RDFaSerializer(DefaultSerializer):
     def __init__(self):
         DefaultSerializer.__init__(self,'rdfa','xml')
     def deserialize(self,graph,content,mimetype):
-        content = unicode(content)
+        content = str(content)
         try:
             #print "Time to Tidy RDFa!!!"
             from tidylib import tidy_document
@@ -104,11 +108,11 @@ class RDFaSerializer(DefaultSerializer):
             #print "failure using tidy. The RDFa document may not parse successfully."
         DefaultSerializer.deserialize(self,graph,content,mimetype)
 
-class MultipartSerializer:
+class MultipartSerializer(object):
     def __init__(self,serializers):
         self.serializers = serializers
     def deserialize(self,graph,content,mimetype):
-        if type(content) == str or type(content) == unicode:
+        if type(content) == str or type(content) == str:
             msg = email.message_from_string("Content-Type:"+mimetype+"\n"+content)
         else:
             msg = email.message_from_string("Content-Type:"+mimetype+"\n"+content.read())
@@ -131,13 +135,13 @@ class MultipartSerializer:
         #print "using this RDF content:"
         #print rdf_content
         ser = self.serializers[rdf[0].get_content_type()]
-        ser.deserialize(graph, unicode(rdf_content), rdf[0].get_content_type())
+        ser.deserialize(graph, str(rdf_content), rdf[0].get_content_type())
         graph.attachments.update(named_parts)
         return frir.RDFGraphDigest
     def serialize(self,graph):
         raise Exception("Multipart serialization is unsupported")
             
-class JSONSerializer:
+class JSONSerializer(object):
     graphAware = False
 
     def serialize(self,graph):
@@ -188,15 +192,15 @@ class JSONSerializer:
         #    graph.parse(content,format=f)
 
         data = content
-        if type(content) == str or type(content) == unicode:
+        if type(content) == str or type(content) == str:
             data = json.loads(content)
         else:
             data = json.load(content)
         #print data
         bnodes = {}
-        for s in data.keys():
+        for s in list(data.keys()):
             subject = self.getResource(s, bnodes)
-            for p in data[s].keys():
+            for p in list(data[s].keys()):
                 predicate = self.getResource(p, bnodes)
                 objs = data[s][p]
                 for o in objs:

@@ -1,9 +1,13 @@
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
 import sadi
 from sadi.serializers import JSONSerializer, RDFaSerializer
 from rdflib import *
 from example import resource, async_resource
 from io import StringIO
-import urlparse
+import urllib.parse
 import time
 import traceback
 import frir
@@ -14,7 +18,7 @@ def no_accept_header_test():
     resp = c.get('/')
     assert resp.status_code == 200
     g = Graph()
-    g.parse(StringIO(unicode(resp.data)),format="xml")
+    g.parse(StringIO(str(resp.data)),format="xml")
     assert len(g) > 0
 
 def descriptor_test():
@@ -23,7 +27,7 @@ def descriptor_test():
     resp = c.get('/',headers={'Accept':'*/*'})
     assert resp.status_code == 200
     g = Graph()
-    g.parse(StringIO(unicode(resp.data)),format="turtle")
+    g.parse(StringIO(str(resp.data)),format="turtle")
     assert len(g) > 0
 
 def non_allowed_methods_test():
@@ -42,7 +46,7 @@ def oddball_accept_descriptor_test():
     resp = c.get('/',headers={'Accept':'image/png'})
     assert resp.status_code == 200
     g = Graph()
-    g.parse(StringIO(unicode(resp.data)),format="xml")
+    g.parse(StringIO(str(resp.data)),format="xml")
     assert len(g) > 0
 
 # JSON is a special case to parse, so it's not included here.
@@ -63,8 +67,8 @@ def descriptor_accept_types_test():
         resp = c.get('/',headers={'Accept':mimetype})
         assert resp.status_code == 200
         g = Graph()
-        print resp.data
-        g.parse(StringIO(unicode(resp.data)),format=of)
+        print(resp.data)
+        g.parse(StringIO(str(resp.data)),format=of)
         assert len(g) > 0
     for mimetype, f, of in supported_mimetypes:
         yield fn, mimetype, f, of
@@ -75,33 +79,33 @@ def json_descriptor_test():
     resp = c.get('/',headers={'Accept':'application/json'})
     assert resp.status_code == 200
     g = Graph()
-    print resp.data
+    print(resp.data)
     s = JSONSerializer()
     s.deserialize(g,resp.data,"application/json")
     assert len(g) > 0
     
 def oddball_accept_service_test():
     '''Test of sending an oddball accept header to a SADI service.'''
-    testInput = unicode('''<http://tw.rpi.edu/instances/JamesMcCusker> <http://xmlns.com/foaf/0.1/name> "Jim McCusker";
+    testInput = str('''<http://tw.rpi.edu/instances/JamesMcCusker> <http://xmlns.com/foaf/0.1/name> "Jim McCusker";
      a <http://sadiframework.org/examples/hello.owl#NamedIndividual>. ''')
     c = sadi.setup_test_client(resource)
     resp = c.post('/',data=testInput, headers={'Content-Type':'text/turtle','Accept':'image/png'})
     assert resp.status_code == 200
     g = Graph()
-    print resp.data
-    g.parse(StringIO(unicode(resp.data)),format="xml")
+    print(resp.data)
+    g.parse(StringIO(str(resp.data)),format="xml")
     assert len(g) > 0
     
 def service_test():
     '''Basic test of using a SADI service.'''
-    testInput = unicode('''<http://tw.rpi.edu/instances/JamesMcCusker> <http://xmlns.com/foaf/0.1/name> "Jim McCusker";
+    testInput = str('''<http://tw.rpi.edu/instances/JamesMcCusker> <http://xmlns.com/foaf/0.1/name> "Jim McCusker";
      a <http://sadiframework.org/examples/hello.owl#NamedIndividual>. ''')
     c = sadi.setup_test_client(resource)
     resp = c.post('/',data=testInput, headers={'Content-Type':'text/turtle','Accept':'*/*'})
     assert resp.status_code == 200
     g = Graph()
-    print resp.data
-    g.parse(StringIO(unicode(resp.data)),format="turtle")
+    print(resp.data)
+    g.parse(StringIO(str(resp.data)),format="turtle")
     assert len(g) > 0
 
 def service_unicode_test():
@@ -114,8 +118,8 @@ def service_unicode_test():
                       headers={'Content-Type':mimetype,'Accept':mimetype})
         assert resp.status_code == 200
         g = Graph()
-        print resp.data
-        g.parse(StringIO(unicode(resp.data,'utf-8')),format=of)
+        print(resp.data)
+        g.parse(StringIO(str(resp.data,'utf-8')),format=of)
         assert len(g) > 0
     for mimetype, f, of in supported_mimetypes:
         yield fn, mimetype, f,of
@@ -123,7 +127,7 @@ def service_unicode_test():
 def service_accept_content_types_test():
     '''Test of accept and content type headers for service invocation.'''
     inputGraph = Graph()
-    inputGraph.parse(StringIO(unicode('''<http://tw.rpi.edu/instances/JamesMcCusker> <http://xmlns.com/foaf/0.1/name> "Jim McCusker";
+    inputGraph.parse(StringIO(str('''<http://tw.rpi.edu/instances/JamesMcCusker> <http://xmlns.com/foaf/0.1/name> "Jim McCusker";
      a <http://sadiframework.org/examples/hello.owl#NamedIndividual>. ''')),format="turtle")
     c = sadi.setup_test_client(resource)
     def fn(mimetype,f,of):
@@ -131,8 +135,8 @@ def service_accept_content_types_test():
                       headers={'Content-Type':mimetype,'Accept':mimetype})
         assert resp.status_code == 200
         g = Graph()
-        print resp.data
-        g.parse(StringIO(unicode(resp.data)),format=of)
+        print(resp.data)
+        g.parse(StringIO(str(resp.data)),format=of)
         assert len(g) > 0
     for mimetype, f, of in supported_mimetypes:
         yield fn, mimetype, f,of
@@ -155,8 +159,8 @@ def service_rdfa_content_type_test():
                   headers={'Content-Type':'text/html','Accept':'text/turtle'})
     assert resp.status_code == 200
     g = Graph()
-    g.parse(StringIO(unicode(resp.data)),format='turtle')
-    print resp.data
+    g.parse(StringIO(str(resp.data)),format='turtle')
+    print(resp.data)
     assert len(g) > 0
 
         
@@ -183,7 +187,7 @@ def service_JSON_accept_content_type_test():
                   headers={'Content-Type':'application/json','Accept':'application/json'})
     assert resp.status_code == 200
     g = Graph()
-    print resp.data
+    print(resp.data)
     s = JSONSerializer()
     s.deserialize(g,resp.data,"application/json")
     assert len(g) > 0
@@ -204,14 +208,14 @@ def curl_turtle_comment_test():
     thread.daemon = True
     thread.start()
     data = subprocess.check_output('curl -s -H Content-Type:text/turtle -H Accept:text/turtle  -X POST --data-binary @exampleInput.ttl http://localhost:9090/'.split(" "))
-    print data
+    print(data)
     g = Graph()
-    g.parse(StringIO(unicode(data)),format='turtle')
-    print "Output graph has", len(g), "triples."
+    g.parse(StringIO(str(data)),format='turtle')
+    print("Output graph has", len(g), "triples.")
     assert len(g) > 0
 
 def make_relative(uri):
-    puri = urlparse.urlsplit(uri)
+    puri = urllib.parse.urlsplit(uri)
     result = puri.path
     if len(puri.query) > 0:
         result += "?"+puri.query
@@ -234,10 +238,10 @@ def wrong_curl_turtle_comment_test():
     thread.daemon = True
     thread.start()
     data = subprocess.check_output('curl -s -H Content-Type:text/turtle -H Accept:text/turtle  -X POST -d @exampleInput.ttl http://localhost:9090/'.split(" "))
-    print data
+    print(data)
     g = Graph()
-    g.parse(StringIO(unicode(data)),format='turtle')
-    print "Output graph has", len(g), "triples."
+    g.parse(StringIO(str(data)),format='turtle')
+    print("Output graph has", len(g), "triples.")
     assert len(g) == 0
 
 def get_pragmas(response):
@@ -248,13 +252,13 @@ def get_pragmas(response):
 
 def async_service_test():
     '''Basic test of using an asynchronous SADI service.'''
-    testInput = unicode('''<http://tw.rpi.edu/instances/JamesMcCusker> <http://xmlns.com/foaf/0.1/name> "Jim McCusker";
+    testInput = str('''<http://tw.rpi.edu/instances/JamesMcCusker> <http://xmlns.com/foaf/0.1/name> "Jim McCusker";
      a <http://sadiframework.org/examples/hello.owl#NamedIndividual>. ''')
     c = sadi.setup_test_client(async_resource)
     resp = c.post('/',data=testInput, headers={'Content-Type':'text/turtle','Accept':'*/*'})
     assert resp.status_code == 202
     g = Graph()
-    g.parse(StringIO(unicode(resp.data)),format="turtle")
+    g.parse(StringIO(str(resp.data)),format="turtle")
     jim = URIRef('http://tw.rpi.edu/instances/JamesMcCusker')
     idb = [x for x in g[jim:RDFS.isDefinedBy]]
     assert len(idb) == 1
@@ -262,7 +266,7 @@ def async_service_test():
     notDone = True
     while notDone:
         idb = make_relative(idb)
-        print idb
+        print(idb)
         resp = c.get(idb,headers={'Accept':'text/turtle'})
         if resp.status_code == 302:
             location = resp.headers['Location']
@@ -276,7 +280,7 @@ def async_service_test():
                 wait = int(pragma['sadi-please-wait'])
                 time.sleep(wait/1000.0)
             except:
-                print traceback.print_exc()
+                print(traceback.print_exc())
                 assert False
         elif resp.status_code == 200:
             notDone = False
@@ -284,12 +288,12 @@ def async_service_test():
             raise Exception(str(resp))
     assert resp.status_code == 200
     g = Graph()
-    g.parse(StringIO(unicode(resp.data)),format="turtle")
+    g.parse(StringIO(str(resp.data)),format="turtle")
     assert len(g) > 0
     jim = URIRef('http://tw.rpi.edu/instances/JamesMcCusker')
     triples = [x for x in g[jim]]
     assert len(triples) > 0
-    print g.serialize(format="turtle")
+    print(g.serialize(format="turtle"))
 
 prov = Namespace("http://www.w3.org/ns/prov#")
 hello=Namespace("http://sadiframework.org/examples/hello.owl#")
@@ -323,18 +327,18 @@ valuator = ValueateService()
 
 def service_get_no_attachment_test():
     '''Test of a SADI service that GETs data from the web.'''
-    testInput = unicode('''<http://www.google.com> a <http://www.w3.org/2002/07/owl#Thing>. ''')
+    testInput = str('''<http://www.google.com> a <http://www.w3.org/2002/07/owl#Thing>. ''')
     c = sadi.setup_test_client(valuator)
     resp = c.post('/',data=testInput, headers={'Content-Type':'text/turtle','Accept':'*/*'})
     assert resp.status_code == 200
     g = Graph()
-    print resp.data
-    g.parse(StringIO(unicode(resp.data)),format="turtle")
+    print(resp.data)
+    g.parse(StringIO(str(resp.data)),format="turtle")
     assert len(g) > 0
 
 def service_get_attachment_test():
     '''Test of a SADI service that GETs data from an attachment.'''
-    testInput = unicode('''--gc0p4Jq0M2Yt08jU534c0p
+    testInput = str('''--gc0p4Jq0M2Yt08jU534c0p
 Content-Type: text/turtle
 
 <http://www.google.com> a <http://www.w3.org/2002/07/owl#Thing>. 
@@ -348,9 +352,9 @@ Content-Disposition: attachment; filename="http://www.google.com"
                                                'Accept':'*/*'})
     assert resp.status_code == 200
     g = Graph()
-    print resp.data
+    print(resp.data)
     assert '<html><head><title>Welcome to Google.</title></head><body><h1>Hello, World!</h1></body></html>' in resp.data
-    g.parse(StringIO(unicode(resp.data)),format="turtle")
+    g.parse(StringIO(str(resp.data)),format="turtle")
     assert len(g) > 0
 
 def ontclass_individual_test():
@@ -374,14 +378,14 @@ def get_digest_value(rdf,mimetype):
 def frir_test():
     '''Test of FRIR identifiers against different RDF serializations against reference turtle serialization.'''
     testInputs = [
-    unicode('''<http://tw.rpi.edu/instances/JamesMcCusker> <http://xmlns.com/foaf/0.1/name> "Jim McCusker";
+    str('''<http://tw.rpi.edu/instances/JamesMcCusker> <http://xmlns.com/foaf/0.1/name> "Jim McCusker";
      a <http://sadiframework.org/examples/hello.owl#NamedIndividual>. '''),
-    unicode('''<http://tw.rpi.edu/instances/JamesMcCusker> <http://xmlns.com/foaf/0.1/name> "Jim McCusker";
+    str('''<http://tw.rpi.edu/instances/JamesMcCusker> <http://xmlns.com/foaf/0.1/name> "Jim McCusker";
      a <http://sadiframework.org/examples/hello.owl#NamedIndividual>;
      <http://purl.org/dc/terms/authorOf> [
        <http://purl.org/dc/terms/title> "Some Blog Post";
      ].'''),
-    unicode('''@prefix : <http://example.org/ns#> .
+    str('''@prefix : <http://example.org/ns#> .
      <http://example.org> :rel
          <http://example.org/same>,
          [ :label "Same" ],
@@ -394,10 +398,10 @@ def frir_test():
 
         testInputGraph = Graph()
         testInputGraph.parse(StringIO(rdf),format="turtle")
-        testInputOther = unicode(testInputGraph.serialize(format=f))
+        testInputOther = str(testInputGraph.serialize(format=f))
         digest = get_digest_value(testInputOther,mimetype)
-        print rdf
-        print f, ttlDigest, digest
+        print(rdf)
+        print(f, ttlDigest, digest)
         assert ttlDigest == digest
 
     for rdf in testInputs:
@@ -407,37 +411,37 @@ def frir_test():
 def negative_graph_match_test():
     '''Test of FRIR identifiers against tricky RDF graphs with blank nodes.'''
     testInputs = [
-    [ unicode('''@prefix : <http://example.org/ns#> .
+    [ str('''@prefix : <http://example.org/ns#> .
      <http://example.org> :rel
          [ :label "Same" ].
          '''),
-    unicode('''@prefix : <http://example.org/ns#> .
+    str('''@prefix : <http://example.org/ns#> .
      <http://example.org> :rel
          [ :label "Same" ],
          [ :label "Same" ].
          '''),
     False
     ],
-    [ unicode('''@prefix : <http://example.org/ns#> .
+    [ str('''@prefix : <http://example.org/ns#> .
      <http://example.org> :rel
          <http://example.org/a>.
          '''),
-    unicode('''@prefix : <http://example.org/ns#> .
+    str('''@prefix : <http://example.org/ns#> .
      <http://example.org> :rel
          <http://example.org/a>,
          <http://example.org/a>.
          '''),
     True
     ],
-    [ unicode('''@prefix : <http://example.org/ns#> .
+    [ str('''@prefix : <http://example.org/ns#> .
      :linear_two_step_symmetry_start :related [ :related [ :related :linear_two_step_symmatry_end]], 
                                               [ :related [ :related :linear_two_step_symmatry_end]].'''),
-    unicode('''@prefix : <http://example.org/ns#> .
+    str('''@prefix : <http://example.org/ns#> .
      :linear_two_step_symmetry_start :related [ :related [ :related :linear_two_step_symmatry_end]], 
                                               [ :related [ :related :linear_two_step_symmatry_end]].'''),
     True
     ],
-    [ unicode('''@prefix : <http://example.org/ns#> .
+    [ str('''@prefix : <http://example.org/ns#> .
      _:a :rel [
          :rel [
          :rel [
@@ -447,7 +451,7 @@ def negative_graph_match_test():
           ];
           ];
           ].'''),
-    unicode('''@prefix : <http://example.org/ns#> .
+    str('''@prefix : <http://example.org/ns#> .
      _:a :rel [
          :rel [
          :rel [
@@ -462,7 +466,7 @@ def negative_graph_match_test():
     False
     ],
     # This test fails because the algorithm purposefully breaks the symmetry of symetric 
-    [ unicode('''@prefix : <http://example.org/ns#> .
+    [ str('''@prefix : <http://example.org/ns#> .
      _:a :rel [
          :rel [
          :rel [
@@ -472,7 +476,7 @@ def negative_graph_match_test():
           ];
           ];
           ].'''),
-    unicode('''@prefix : <http://example.org/ns#> .
+    str('''@prefix : <http://example.org/ns#> .
      _:a :rel [
          :rel [
          :rel [
@@ -484,7 +488,7 @@ def negative_graph_match_test():
           ].'''),
     True
     ],
-    [ unicode('''@prefix : <http://example.org/ns#> .
+    [ str('''@prefix : <http://example.org/ns#> .
      _:a :rel [
          :rel [
          :label "foo";
@@ -495,7 +499,7 @@ def negative_graph_match_test():
           ];
           ];
           ].'''),
-    unicode('''@prefix : <http://example.org/ns#> .
+    str('''@prefix : <http://example.org/ns#> .
      _:a :rel [
          :rel [
          :rel [
@@ -529,8 +533,8 @@ def ontclass_list_all_instances_test():
 def rdfa_parser_test():
     parser = RDFaSerializer()
     graph = Graph()
-    import urllib
-    doc = urllib.urlopen('http://www.3kbo.com/examples/rdfa/simple.html').read()
+    import urllib.request, urllib.parse, urllib.error
+    doc = urllib.request.urlopen('http://www.3kbo.com/examples/rdfa/simple.html').read()
     parser.deserialize(graph,doc,'text/html')
-    print graph.serialize(format="turtle")
+    print(graph.serialize(format="turtle"))
     assert len(graph) > 10

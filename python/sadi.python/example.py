@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sadi
 from rdflib import *
 from time import sleep
@@ -29,7 +30,7 @@ class ExampleAsyncService(sadi.Service):
     def async_process(self, i,o):
         # This is just to make it actually take a bit of time.
         sleep(7)
-        print input
+        print(input)
         o.set(hello.greeting, Literal("Hello, "+i.value(foaf.name).value))
 
 async_resource = ExampleAsyncService()
@@ -55,7 +56,7 @@ class ExampleService(sadi.Service):
         return hello.GreetedIndividual
 
     def process(self, input, output):
-        print input
+        print(input)
         output.set(hello.greeting, Literal("Hello, "+input.value(foaf.name).value))
 
 resource = ExampleService()
