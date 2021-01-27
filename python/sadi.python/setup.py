@@ -4,7 +4,7 @@
 from setuptools import setup, find_packages
 setup(
     name = "sadi",
-    version = "0.5.6",
+    version = "0.5.7",
     packages = find_packages(exclude=['test.py',"example.py"]),
 
     install_requires = ['rdflib>=4.0', "Werkzeug", 'webob', 'python-dateutil','pytidylib', 'future'],
