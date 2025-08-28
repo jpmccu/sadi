@@ -81,7 +81,7 @@ jobs:
     - name: Build package
       working-directory: python/sadi.python
       run: |
-        python -m build
+        python -m build --no-isolation
     
     - name: Check package
       working-directory: python/sadi.python
