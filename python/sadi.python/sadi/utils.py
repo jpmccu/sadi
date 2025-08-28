@@ -1,12 +1,12 @@
-import uuid
-import string
 import email
+import string
+import uuid
 
-ALPHABET = string.ascii_uppercase + string.ascii_lowercase + \
-           string.digits
+ALPHABET = string.ascii_uppercase + string.ascii_lowercase + string.digits
 ALPHABET_REVERSE = dict((c, i) for (i, c) in enumerate(ALPHABET))
 BASE = len(ALPHABET)
-SIGN_CHARACTER = '$'
+SIGN_CHARACTER = "$"
+
 
 def num_encode(n):
     if n < 0:
@@ -15,8 +15,10 @@ def num_encode(n):
     while True:
         n, r = divmod(n, BASE)
         s.append(ALPHABET[r])
-        if n == 0: break
-    return ''.join(reversed(s))
+        if n == 0:
+            break
+    return "".join(reversed(s))
+
 
 def create_id():
     id = uuid.uuid4()

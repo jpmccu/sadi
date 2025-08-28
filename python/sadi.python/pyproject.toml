@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sadi"
-version = "0.5.7"
+version = "1.0.0"
 description = "SADI for Python - Semantic Automated Discovery and Integration framework"
 readme = "README.md"
 license = {text = "BSD-3-Clause"}
