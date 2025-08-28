@@ -14,7 +14,7 @@ setup(
     python_requires='>=3.8',
     
     # metadata for upload to PyPI
-    author = "James McCusker",
+    author = "Jamie McCusker",
     author_email = "mccusker@gmail.com",
     description = "SADI for python.",
     license = "New BSD License",
