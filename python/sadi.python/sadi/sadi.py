@@ -1,10 +1,8 @@
-from __future__ import print_function
-from __future__ import absolute_import
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
-from past.builtins import basestring
-from builtins import object
+# Python 3.12 compatibility: removed future library dependencies
+# from future import standard_library
+# standard_library.install_aliases()
+# from builtins import str, object  # These are built-in in Python 3
+# from past.builtins import basestring  # In Python 3, use str instead
 from rdflib import *
 from rdflib.resource import *
 import rdflib
@@ -16,7 +14,7 @@ from webob import Request
 from .utils import create_id
 from threading import Thread
 import urllib.request, urllib.error, urllib.parse
-from werkzeug.wrappers import BaseResponse as Response
+from werkzeug.wrappers import Response
 
 from .serializers import *
 
@@ -72,11 +70,11 @@ class Individual(Resource):
 
 class OntClass(Resource):
     def __init__(self,graph, identifier=None):
-        if isinstance(identifier, basestring):
+        if isinstance(identifier, str):
             identifier = URIRef(identifier)
         Resource.__init__(self,graph,identifier)
     def __call__(self,identifier=None):
-        if isinstance(identifier, basestring):
+        if isinstance(identifier, str):
             identifier = URIRef(identifier)
         if identifier == None:
             identifier = BNode()
@@ -364,11 +362,9 @@ class Service(object):
 
 def setup_test_client(app):
     from werkzeug.test import Client
-    from werkzeug.wrappers import BaseResponse
-    import werkzeug.wrappers
-    class Response(BaseResponse, werkzeug.wrappers.CommonResponseDescriptorsMixin):
-        pass 
-    c = Client(app,Response)
+    from werkzeug.wrappers import Response
+    # Python 3.12 compatibility: Use Response directly instead of BaseResponse and CommonResponseDescriptorsMixin
+    c = Client(app, Response)
     return c
     
 def serve(resource,port):

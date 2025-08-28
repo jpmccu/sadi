@@ -1,31 +1,31 @@
-from __future__ import absolute_import
-from builtins import str
-from builtins import object
+# Python 3.12 compatibility: removed future library dependencies and imp module
+# from builtins import str, object  # These are built-in in Python 3
 from rdflib import *
 import json
 import rdflib
 from . import mimeparse
 import collections
 import email
-import imp
+# import imp  # Removed in Python 3.12 - not needed for UTF-8 default encoding
 from io import StringIO, BytesIO
 from xml.sax.xmlreader import InputSource
 
 import sys
 
-def setDefaultEncoding():
-    currentStdOut = sys.stdout
-    currentStdIn = sys.stdin
-    currentStdErr = sys.stderr
-    
-    imp.reload(sys)
-    # sys.setdefaultencoding('utf-8')
-    
-    sys.stdout = currentStdOut
-    sys.stdin = currentStdIn
-    sys.stderr = currentStdErr
+# Python 3.12 compatibility: setDefaultEncoding not needed since UTF-8 is default
+# def setDefaultEncoding():
+#     currentStdOut = sys.stdout
+#     currentStdIn = sys.stdin
+#     currentStdErr = sys.stderr
+#     
+#     imp.reload(sys)
+#     # sys.setdefaultencoding('utf-8')
+#     
+#     sys.stdout = currentStdOut
+#     sys.stdin = currentStdIn
+#     sys.stderr = currentStdErr
 
-setDefaultEncoding()
+# setDefaultEncoding()  # Not needed in Python 3.12
 
 frir = Namespace("http://purl.org/twc/ontology/frir.owl#")
 
@@ -64,7 +64,23 @@ class DefaultSerializer(object):
 
     def serialize(self,graph):
         self.bindPrefixes(graph)
-        return graph.serialize(format=self.outputFormat,encoding='utf-8')
+        # For N-Triples format, we need to handle relative URIs specially
+        if self.outputFormat == 'nt':
+            # Create a new graph with absolute URIs to avoid relative URI issues
+            base_uri = "http://example.org/service"
+            absolute_graph = Graph()
+            for s, p, o in graph:
+                # Convert relative URIs to absolute ones
+                if isinstance(s, URIRef) and str(s).startswith('#'):
+                    s = URIRef(base_uri + str(s))
+                if isinstance(p, URIRef) and str(p).startswith('#'):
+                    p = URIRef(base_uri + str(p))
+                if isinstance(o, URIRef) and str(o).startswith('#'):
+                    o = URIRef(base_uri + str(o))
+                absolute_graph.add((s, p, o))
+            return absolute_graph.serialize(format=self.outputFormat, encoding='utf-8')
+        else:
+            return graph.serialize(format=self.outputFormat,encoding='utf-8')
     def deserialize(self,graph, content,mimetype):
         if type(content) == str or type(content) == str:
             #if self.inputFormat == 'xml':
@@ -150,7 +166,8 @@ class JSONSerializer(object):
             if type(node) == BNode:
                 return "_:"+str(node)
             else:
-                return node.encode('utf-8','ignore')
+                # Python 3.12 compatibility: Return string instead of bytes for JSON serialization
+                return str(node)
         def makeObject(o):
             result = {}
             result['value'] = getValue(o)
@@ -192,7 +209,11 @@ class JSONSerializer(object):
         #    graph.parse(content,format=f)
 
         data = content
-        if type(content) == str or type(content) == str:
+        # Handle bytes objects by decoding to string first
+        if isinstance(content, bytes):
+            content = content.decode('utf-8')
+            data = json.loads(content)
+        elif type(content) == str or type(content) == str:
             data = json.loads(content)
         else:
             data = json.load(content)
