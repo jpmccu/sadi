@@ -38,6 +38,8 @@ def run_smoke_tests():
         print("STDERR:", result.stderr)
     
     return result.returncode == 0
+
+def run_comprehensive_tests():
     """Run comprehensive SADI tests (requires dependencies)."""
     print("Running comprehensive SADI tests...")
     result = subprocess.run([sys.executable, 'test_sadi_comprehensive.py'], 
