@@ -1,12 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from __future__ import print_function
-from future import standard_library
-standard_library.install_aliases()
-from builtins import hex
-from builtins import map
-from builtins import str
-from builtins import object
+# Python 3.12 compatibility: removed future library dependencies
+# from future import standard_library
+# standard_library.install_aliases()
+# from builtins import hex, map, str, object  # These are built-in in Python 3
 from rdflib import *
 
 import re, os, sys
@@ -307,12 +305,12 @@ class RDFGraphDigest(object):
     def getDigest(self):
         if self.isRaw:
             return [self.algorithm,
-                    base64.urlsafe_b64encode(buffer(packl(self.rawtotal))),
+                    base64.urlsafe_b64encode(packl(self.rawtotal)),
                     frir.TabularDigest]
         else:
             value = self.total
             if type(value) == int:
-                value = base64.urlsafe_b64encode(buffer(packl(value)))
+                value = base64.urlsafe_b64encode(packl(value))
             return [self.algorithm,
                     value,
                     self.type]
@@ -384,12 +382,12 @@ class RDFGraphDigest(object):
         m.update(workURI+'\n')
         m.update(''.join(response.msg.headers))
         m.update(content)
-        return ['sha-256',urlsafe_b64encode(buffer(m.digest())), nfo.FileHash]
+        return ['sha-256',urlsafe_b64encode(m.digest()), nfo.FileHash]
 
     def createManifestationHash(self, content):
         m = hashlib.sha256()
         m.update(content)
-        return ['sha-256',urlsafe_b64encode(buffer(m.digest())), nfo.FileHash]
+        return ['sha-256',urlsafe_b64encode(m.digest()), nfo.FileHash]
 
     def createExpressionHash(self, filename, content, mimetype=None):
         mimetype = self.loadAndUpdate(content,filename,mimetype)
@@ -408,13 +406,13 @@ class RDFGraphDigest(object):
         m = hashlib.sha256()
         m.update(str(uuid.getnode()))
         m.update(str(os.stat(filename)[ST_MTIME]))
-        hostAndModTime = urlsafe_b64encode(buffer(m.digest()))
+        hostAndModTime = urlsafe_b64encode(m.digest())
         absolutePath = os.path.abspath(filename)
         dirname = os.path.dirname(absolutePath)
         basename = os.path.basename(absolutePath)
         m = hashlib.sha256()
         m.update(dirname)
-        pathDigest = '-'.join(['sha-256',urlsafe_b64encode(buffer(m.digest()))])
+        pathDigest = '-'.join(['sha-256',urlsafe_b64encode(m.digest())])
         return prefix+hostAndModTime+'/'+pathDigest+'/'+basename
 
 extensions = {

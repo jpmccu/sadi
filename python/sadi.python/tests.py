@@ -1,7 +1,8 @@
 from __future__ import print_function
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
+# Python 3.12 compatibility: removed future library dependencies
+# from future import standard_library
+# standard_library.install_aliases()
+# from builtins import str  # This is built-in in Python 3
 import sadi
 from sadi.serializers import JSONSerializer, RDFaSerializer
 from rdflib import *

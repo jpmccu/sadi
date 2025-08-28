@@ -1,2 +1,0 @@
-[nose.plugins]
-cov = nose_cov:Cov

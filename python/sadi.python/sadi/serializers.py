@@ -1,6 +1,6 @@
 from __future__ import absolute_import
-from builtins import str
-from builtins import object
+# Python 3.12 compatibility: removed future library dependencies
+# from builtins import str, object  # These are built-in in Python 3
 from rdflib import *
 import json
 import rdflib

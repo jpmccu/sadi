@@ -13,7 +13,8 @@ Contents:
     - quality_parsed():    Just like quality() except the second parameter must be pre-parsed.
     - best_match():        Choose the mime-type with the highest quality ('q') from a list of candidates. 
 """
-from builtins import str
+# Python 3.12 compatibility: removed future library dependencies
+# from builtins import str  # This is built-in in Python 3
 from functools import reduce
 
 __version__ = "0.1.3"

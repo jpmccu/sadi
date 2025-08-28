@@ -1,10 +1,10 @@
 from __future__ import print_function
 from __future__ import absolute_import
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
-from past.builtins import basestring
-from builtins import object
+# Python 3.12 compatibility: removed future library dependencies
+# from future import standard_library
+# standard_library.install_aliases()
+# from builtins import str, object  # These are built-in in Python 3
+# from past.builtins import basestring  # In Python 3, use str instead
 from rdflib import *
 from rdflib.resource import *
 import rdflib
@@ -72,11 +72,11 @@ class Individual(Resource):
 
 class OntClass(Resource):
     def __init__(self,graph, identifier=None):
-        if isinstance(identifier, basestring):
+        if isinstance(identifier, str):
             identifier = URIRef(identifier)
         Resource.__init__(self,graph,identifier)
     def __call__(self,identifier=None):
-        if isinstance(identifier, basestring):
+        if isinstance(identifier, str):
             identifier = URIRef(identifier)
         if identifier == None:
             identifier = BNode()
