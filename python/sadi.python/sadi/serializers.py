@@ -1,5 +1,4 @@
-from __future__ import absolute_import
-# Python 3.12 compatibility: removed future library dependencies
+# Python 3.12 compatibility: removed future library dependencies and imp module
 # from builtins import str, object  # These are built-in in Python 3
 from rdflib import *
 import json
@@ -7,25 +6,26 @@ import rdflib
 from . import mimeparse
 import collections
 import email
-import imp
+# import imp  # Removed in Python 3.12 - not needed for UTF-8 default encoding
 from io import StringIO, BytesIO
 from xml.sax.xmlreader import InputSource
 
 import sys
 
-def setDefaultEncoding():
-    currentStdOut = sys.stdout
-    currentStdIn = sys.stdin
-    currentStdErr = sys.stderr
-    
-    imp.reload(sys)
-    # sys.setdefaultencoding('utf-8')
-    
-    sys.stdout = currentStdOut
-    sys.stdin = currentStdIn
-    sys.stderr = currentStdErr
+# Python 3.12 compatibility: setDefaultEncoding not needed since UTF-8 is default
+# def setDefaultEncoding():
+#     currentStdOut = sys.stdout
+#     currentStdIn = sys.stdin
+#     currentStdErr = sys.stderr
+#     
+#     imp.reload(sys)
+#     # sys.setdefaultencoding('utf-8')
+#     
+#     sys.stdout = currentStdOut
+#     sys.stdin = currentStdIn
+#     sys.stderr = currentStdErr
 
-setDefaultEncoding()
+# setDefaultEncoding()  # Not needed in Python 3.12
 
 frir = Namespace("http://purl.org/twc/ontology/frir.owl#")
 
@@ -150,7 +150,8 @@ class JSONSerializer(object):
             if type(node) == BNode:
                 return "_:"+str(node)
             else:
-                return node.encode('utf-8','ignore')
+                # Python 3.12 compatibility: Return string instead of bytes for JSON serialization
+                return str(node)
         def makeObject(o):
             result = {}
             result['value'] = getValue(o)

@@ -1,5 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
 # Python 3.12 compatibility: removed future library dependencies
 # from future import standard_library
 # standard_library.install_aliases()
@@ -16,7 +14,7 @@ from webob import Request
 from .utils import create_id
 from threading import Thread
 import urllib.request, urllib.error, urllib.parse
-from werkzeug.wrappers import BaseResponse as Response
+from werkzeug.wrappers import Response
 
 from .serializers import *
 
@@ -364,11 +362,9 @@ class Service(object):
 
 def setup_test_client(app):
     from werkzeug.test import Client
-    from werkzeug.wrappers import BaseResponse
-    import werkzeug.wrappers
-    class Response(BaseResponse, werkzeug.wrappers.CommonResponseDescriptorsMixin):
-        pass 
-    c = Client(app,Response)
+    from werkzeug.wrappers import Response
+    # Python 3.12 compatibility: Use Response directly instead of BaseResponse and CommonResponseDescriptorsMixin
+    c = Client(app, Response)
     return c
     
 def serve(resource,port):
