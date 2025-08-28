@@ -305,12 +305,12 @@ class RDFGraphDigest(object):
     def getDigest(self):
         if self.isRaw:
             return [self.algorithm,
-                    base64.urlsafe_b64encode(packl(self.rawtotal)),
+                    base64.urlsafe_b64encode(packl(self.rawtotal)).decode('ascii'),
                     frir.TabularDigest]
         else:
             value = self.total
             if type(value) == int:
-                value = base64.urlsafe_b64encode(packl(value))
+                value = base64.urlsafe_b64encode(packl(value)).decode('ascii')
             return [self.algorithm,
                     value,
                     self.type]

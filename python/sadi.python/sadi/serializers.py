@@ -64,7 +64,23 @@ class DefaultSerializer(object):
 
     def serialize(self,graph):
         self.bindPrefixes(graph)
-        return graph.serialize(format=self.outputFormat,encoding='utf-8')
+        # For N-Triples format, we need to handle relative URIs specially
+        if self.outputFormat == 'nt':
+            # Create a new graph with absolute URIs to avoid relative URI issues
+            base_uri = "http://example.org/service"
+            absolute_graph = Graph()
+            for s, p, o in graph:
+                # Convert relative URIs to absolute ones
+                if isinstance(s, URIRef) and str(s).startswith('#'):
+                    s = URIRef(base_uri + str(s))
+                if isinstance(p, URIRef) and str(p).startswith('#'):
+                    p = URIRef(base_uri + str(p))
+                if isinstance(o, URIRef) and str(o).startswith('#'):
+                    o = URIRef(base_uri + str(o))
+                absolute_graph.add((s, p, o))
+            return absolute_graph.serialize(format=self.outputFormat, encoding='utf-8')
+        else:
+            return graph.serialize(format=self.outputFormat,encoding='utf-8')
     def deserialize(self,graph, content,mimetype):
         if type(content) == str or type(content) == str:
             #if self.inputFormat == 'xml':
@@ -193,7 +209,11 @@ class JSONSerializer(object):
         #    graph.parse(content,format=f)
 
         data = content
-        if type(content) == str or type(content) == str:
+        # Handle bytes objects by decoding to string first
+        if isinstance(content, bytes):
+            content = content.decode('utf-8')
+            data = json.loads(content)
+        elif type(content) == str or type(content) == str:
             data = json.loads(content)
         else:
             data = json.load(content)
